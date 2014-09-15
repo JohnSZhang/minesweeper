@@ -58,9 +58,11 @@ class Board
 
     if got_bomb == true
       puts "You blew up! Game over!"
+      self.render
       return true
     elsif explored_count == @size * @size - @mines
       puts "You cleared all the mines!"
+      self.render
       return true
     end
 
@@ -68,24 +70,27 @@ class Board
   end
 
   def render
-    (board.count + 2).times do |index|
-      if (1..board.count).include?(index)
-        print "#{index} "
+    print "   "
+    (board.count).times do |index|
+      if (0..board.count).include?(index)
+        print "#{index}  "
       else
-        print "%%"
+        print "  "
       end
     end
-    print "\n"
-    puts (board.count + 2).times{ "%% " }
+    puts
+    (board.count + 2).times{ print "%  " }
+    puts
     board.count.times do |row|
-      print "% "
+      print "%  "
       board.count.times do |col|
-        print board[row][col].render + " "
+        print board[row][col].render + "  "
       end
       print "%\n"
-      print "\n"
+      puts
     end
-    puts (board.count + 2).times{ "%% " }
+    (board.count + 2).times{ print "%  " }
+    puts
     self
   end
 
@@ -115,19 +120,6 @@ class Board
     neighbors
   end
 
-  def adj_neighbors(pos)
-    adj_neighbors = []
-    moves = [-1,0,1]
-    moves.each do |x|
-      moves.dup.each do |y|
-        x_cor, y_cor = pos[0] + x, pos[1] + y
-        next if (x == y || x + y == 0) || [x_cor ,y_cor].any?{|n| !(0...@size).include?(n)}
-        adj_neighbors << board[(x_cor)][(y_cor)]
-      end
-    end
-    adj_neighbors
-  end
-
 end
 
 class Tile
@@ -153,18 +145,20 @@ class Tile
   end
 
   def explore
+    return if self.flag?
     self.explored = true
-    self.get_adj_neighbors.each do |n|
-      n.explore unless n.bomb? || n.explored?
+    neighbors = self.get_neighbors
+    if neighbors.none?{|n| n.bomb?}
+      neighbors.each{|n| n.explore unless n.explored? }
     end
   end
 
   def flag?
-    flagged
+    self.flagged
   end
 
   def flag
-    flagged = !flagged
+    self.flagged = !self.flagged unless self.explored?
   end
 
   def render
@@ -189,10 +183,6 @@ class Tile
 
   def get_neighbors
     self.board.neighbors(self.pos)
-  end
-
-  def get_adj_neighbors
-    self.board.adj_neighbors(self.pos)
   end
 
   def inspect
