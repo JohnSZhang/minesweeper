@@ -4,13 +4,23 @@ class Minesweeper
     @board = Board.new.set_bombs.render
   end
 
+  def play
+    until self.board.over?
+      self.board.render
+      print "Pick a coordinate: "
+      pick_coordinate = gets.chomp.split(' ')
+      x, y = pick_coordinate[1].to_i, pick_coordinate[2].to_i
+      self.board.process_tile([x,y], pick_coordinate[0])
+    end
+  end
+
 end
 
 class Board
 
   attr_accessor :board
 
-  def initialize(size = 9, mines = 10)
+  def initialize(size = 9, mines = 20)
     @board = Array.new(9) { Array.new(9) }
     @size = size
     @mines = mines
@@ -19,16 +29,63 @@ class Board
         self.board[row][tile] = Tile.new(self, [row, tile])
       end
     end
+    @over
+  end
 
+  def process_tile(pos, move)
+    if move == "f"
+      board[pos[0]][pos[1]].flag
+    else
+      board[pos[0]][pos[1]].explore
+    end
+  end
+
+
+  def over?
+    #If there's a mine
+    #If explored tiles == total_size - mine_count
+    got_bomb = false
+    explored_count = 0
+    board.count.times do |row|
+      board.count.times do |col|
+        explored_count += 1 if board[row][col].explored?
+        if board[row][col].bomb? && board[row][col].explored?
+          got_bomb = true
+          break
+        end
+      end
+    end
+
+    if got_bomb == true
+      puts "You blew up! Game over!"
+      return true
+    elsif explored_count == @size * @size - @mines
+      puts "You cleared all the mines!"
+      return true
+    end
+
+    false
   end
 
   def render
-    board.count.times do |row|
-      board.count.times do |col|
-        print board[row][col].render
+    (board.count + 2).times do |index|
+      if (1..board.count).include?(index)
+        print "#{index} "
+      else
+        print "%%"
       end
+    end
+    print "\n"
+    puts (board.count + 2).times{ "%% " }
+    board.count.times do |row|
+      print "% "
+      board.count.times do |col|
+        print board[row][col].render + " "
+      end
+      print "%\n"
       print "\n"
     end
+    puts (board.count + 2).times{ "%% " }
     self
   end
 
@@ -58,6 +115,19 @@ class Board
     neighbors
   end
 
+  def adj_neighbors(pos)
+    adj_neighbors = []
+    moves = [-1,0,1]
+    moves.each do |x|
+      moves.dup.each do |y|
+        x_cor, y_cor = pos[0] + x, pos[1] + y
+        next if (x == y || x + y == 0) || [x_cor ,y_cor].any?{|n| !(0...@size).include?(n)}
+        adj_neighbors << board[(x_cor)][(y_cor)]
+      end
+    end
+    adj_neighbors
+  end
+
 end
 
 class Tile
@@ -79,7 +149,14 @@ class Tile
   end
 
   def explored?
-    explored
+    self.explored
+  end
+
+  def explore
+    self.explored = true
+    self.get_adj_neighbors.each do |n|
+      n.explore unless n.bomb? || n.explored?
+    end
   end
 
   def flag?
@@ -96,10 +173,13 @@ class Tile
     elsif explored?
       return "X" if bomb?
       neighbors = self.get_neighbors
-      bombs_count = neighbors.inject(0) {|ini, n| ini += 1 if n.bomb?}
+      bombs_count = 0
+      neighbors.each do |neighbor|
+        bombs_count += 1 if neighbor.bomb?
+      end
       if bombs_count == 0
         "_"
-      else bombs_count >= 1
+      elsif bombs_count >= 1
         "#{bombs_count}"
       end
     else
@@ -110,6 +190,11 @@ class Tile
   def get_neighbors
     self.board.neighbors(self.pos)
   end
+
+  def get_adj_neighbors
+    self.board.adj_neighbors(self.pos)
+  end
+
   def inspect
     "is bomb? #{bomb?} is flagged? #{flag?} at position #{pos}"
   end
