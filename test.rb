@@ -19,7 +19,7 @@ def func2
 end
 
 puts "Started At #{Time.now}"
-t2 = Thread.new{
+t3 = Thread.new{
     while true 
     end
   }
@@ -28,3 +28,4 @@ t2=Thread.new{func2()}
 
 t1.join
 t2.join
+t3.join

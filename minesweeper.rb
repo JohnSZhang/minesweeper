@@ -9,6 +9,7 @@ class Minesweeper
   def initialize
     @board = Board.new
     @thread = nil
+    @mutex = Mutex.new
   end
   def save
     save = @board.to_yaml
@@ -36,10 +37,16 @@ class Minesweeper
     #   # p Thread.main
     #
     # end
-    main_thread = Thread.new{self.test_thread1}
+    @game_thread = Thread.new{
+      unless self.game.over?
+      end
+    }
+    @main_thread = Thread.new{self.animate_board}
 
-    other_thread = Thread.new{self.test_thread2}
-    
+
+    @input_thread = Thread.new{self.get_input}
+    @main_thread.join
+    @input_thread.join
     # until self.board.over?
     #     system "clear"
     #
@@ -73,49 +80,44 @@ class Minesweeper
     #
     #    self.board.process_move(input)
   end
+  def get_input
+    sleep(6.0/24.0)
+    until self.board.over?
+
+      sleep(12.0/24.0)
+      system("stty raw -echo")
+      input = STDIN.getc
+      @mutex.synchronize do
+        self.board.process_move(input)
+      end
+      #   self.board.render 0
+      #   # if input == "x"
+      # #     @game_thread.kill
+      # #     @other_thread.kill
+      # #     @input_thread.kill
+      # #   end
+      #
+    end
+  end
   
   def animate_board
-
-    frame_rate = (18.0/24.0)
-    @render_thread = Thread.new do
-      until self.board.over?
-        [0,1].each do |frame|
+    frame_rate = (12.0/24.0)
+    
+    until self.board.over?
+      [0,1].each do |frame|
+        @mutex.synchronize do
           self.board.render frame
-          print "\r\nUse Arrow Keys To Move, E to Explore Current Tile "
-          print "\r\nand F to flag current tile \n"
-          print "\r\nType S to save game and L to load last save"
-          sleep(frame_rate)
-          system "clear"         
         end
-        # To Handle Input
-
+        print "\r\nUse Arrow Keys To Move, E to Explore Current Tile "
+        print "\r\nand F to flag current tile \n"
+        print "\r\nType S to save game and L to load last save"
+        sleep(frame_rate)
+        system "clear"  
       end
     end
-    puts "outside of thread"
-    #To read by io stream without enter
-    #See http://stackoverflow.com/questions/174933/how-to-get-a-single-character-without-pressing-enter
   
   end
    
-  def test_thread1
-    counter = 0
-    while counter < 10
-      counter += 1
-      sleep(2)
-      print "test 1 running"
-      # Thread.stop if counter == 3
-    end
-  end
-  
-  def test_thread2
-    counter = 0
-    while counter < 10
-      counter += 1
-      sleep(3)
-      print "test 2 running"
-      # Thread.stop if counter == 2
-    end
-  end
 end
 
 

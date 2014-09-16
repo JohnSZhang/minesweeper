@@ -22,22 +22,20 @@ class Board
     self
   end
   # Arrow parsing method From https://gist.github.com/acook/4190379
-  # def process_move(move)
-  #   p "process move is called"
-  #   p move
-  #   cursor_pos = self.cursor.position
-  #   p cursor_pos
-  #   case move
-  #   when "E" || "e"
-  #     self[cursor_pos].explore
-  #   when "F" || "f"
-  #     self[cursor_pos].flag!
-  #   # when "\e[A"
-  #   # when "\e[B"
-  #   # when "\e[C"
-  #   # when "\e[D"
-  #   end
-  # end
+  def process_move(move)
+    
+    cursor_pos = self.cursor.position
+    case 
+    when ["e","E"].include?(move)
+      self[cursor_pos].explore
+    when ["f","F"].include?(move)
+      self[cursor_pos].flag!
+    # when "\e[A"
+   #  when "\e[B"
+   #  when "\e[C"
+   #  when "\e[D"
+    end
+  end
   
   def process_tile(pos, move)
     if move == "f"
