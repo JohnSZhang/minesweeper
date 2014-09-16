@@ -1,11 +1,14 @@
+require "colorize"
 class Board
 
   attr_accessor :grid
-  attr_reader :size
-  def initialize(size = 9, mines = 20)
+  attr_reader :size, :cursor
+  def initialize(size = 9, mines = 20 )
     @grid = Array.new(9) { Array.new(9) }
     @size = size
     @mines = mines
+    @cursor = Cursor.new([rand(size), rand(size)])
+    
     create_grid.set_bombs(@mines)
   end
 
@@ -18,7 +21,24 @@ class Board
 
     self
   end
-
+  # Arrow parsing method From https://gist.github.com/acook/4190379
+  # def process_move(move)
+  #   p "process move is called"
+  #   p move
+  #   cursor_pos = self.cursor.position
+  #   p cursor_pos
+  #   case move
+  #   when "E" || "e"
+  #     self[cursor_pos].explore
+  #   when "F" || "f"
+  #     self[cursor_pos].flag!
+  #   # when "\e[A"
+  #   # when "\e[B"
+  #   # when "\e[C"
+  #   # when "\e[D"
+  #   end
+  # end
+  
   def process_tile(pos, move)
     if move == "f"
       grid[pos].flag!
@@ -39,9 +59,7 @@ class Board
 
 
   def over?
-
     self.win? || self.lose?
-
   end
 
   def win?
@@ -52,8 +70,10 @@ class Board
     self.grid.flatten.select { |tile| tile.explored? && tile.bomb? }.count > 0
   end
 
-  def render
-    print "   "
+  def render(f)
+    border = ["$", "%"]
+    cursor = [:light_cyan, :light_white ]
+    print "\r\n  "
     (grid.count).times do |index|
       if (0..grid.count).include?(index)
         print "#{index}  "
@@ -61,49 +81,37 @@ class Board
         print "  "
       end
     end
-    puts
-    (grid.count + 2).times{ print "%  " }
-    puts
+    print "\r\n"
+    (grid.count + 2).times{ print "#{border[f]}  " }
     grid.count.times do |row|
-      print "%  "
+      print "\r\n#{border[f]}  "
       grid.count.times do |col|
-        print self[[row, col]].render + "  "
+        tile = self[[row, col]]
+        if tile.pos == self.cursor.position
+          print (tile.render + " ").colorize(:background => cursor[f])
+        else
+          print (tile.render + " ")
+        end
       end
-      print "%\n"
-      puts
+      print "#{border[f]}\n"
     end
-    (grid.count + 2).times{ print "%  " }
-    puts
+    print "\r\n"
+    (grid.count + 2).times{ print "#{border[f]}  " }
     self
   end
   
-  def render2
-    print "   "
-    (grid.count).times do |index|
-      if (0..grid.count).include?(index)
-        print "#{index}  "
-      else
-        print "  "
-      end
-    end
-    puts
-    (grid.count + 2).times{ print "$  " }
-    puts
-    grid.count.times do |row|
-      print "$  "
-      grid.count.times do |col|
-        print self[[row, col]].render + "  "
-      end
-      print "$\n"
-      puts
-    end
-    (grid.count + 2).times{ print "$  " }
-    puts
-    self
+  def render_border
+  end
+  
+  def render_row
+  end
+  
+  def render_tile
   end
 
   def set_bombs(mines)
     mine_count = mines
+    
     until mine_count == 0
       tile = self.grid.sample.sample
       unless tile.bomb?
@@ -118,6 +126,7 @@ class Board
   def neighbors(pos)
     neighbors = []
     moves = [-1,0,1]
+    
     moves.each do |x|
       moves.dup.each do |y|
         x_cor, y_cor = pos[0] + x, pos[1] + y
@@ -128,5 +137,5 @@ class Board
 
     neighbors
   end
-
+  
 end
