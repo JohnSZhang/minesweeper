@@ -1,7 +1,7 @@
 class Board
 
   attr_accessor :grid
-
+  attr_reader :size
   def initialize(size = 9, mines = 20)
     @grid = Array.new(9) { Array.new(9) }
     @size = size
@@ -73,6 +73,31 @@ class Board
       puts
     end
     (grid.count + 2).times{ print "%  " }
+    puts
+    self
+  end
+  
+  def render2
+    print "   "
+    (grid.count).times do |index|
+      if (0..grid.count).include?(index)
+        print "#{index}  "
+      else
+        print "  "
+      end
+    end
+    puts
+    (grid.count + 2).times{ print "$  " }
+    puts
+    grid.count.times do |row|
+      print "$  "
+      grid.count.times do |col|
+        print self[[row, col]].render + "  "
+      end
+      print "$\n"
+      puts
+    end
+    (grid.count + 2).times{ print "$  " }
     puts
     self
   end
