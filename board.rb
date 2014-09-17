@@ -4,7 +4,7 @@ class Board
 
   attr_accessor :grid
   attr_reader :size, :cursor
-  def initialize(size = 9, mines = 20 )
+  def initialize(size = 9, mines = 16 )
     @grid = Array.new(9) { Array.new(9) }
     @size = size
     @mines = mines
@@ -119,9 +119,10 @@ class Board
  end
 
  def reveal
-   self.grid.times do |row|
+   self.grid.each do |row|
      row.each {|tile| print(tile.reveal)}
      print "\r\n"
    end
    self
+ end
 end

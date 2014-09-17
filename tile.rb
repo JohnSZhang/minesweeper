@@ -5,7 +5,7 @@ class Tile
     unexplored: ["☭ ","⚒ "],
     flagged: "⚔ ",
     safe: "⚖ ",
-    kill_bomb: "☠",
+    kill_bomb: "☠ ",
     1 => "1 ",
     2 => "2 ",
     3 => "3 ",
@@ -13,16 +13,25 @@ class Tile
     5 => "5 ",
     6 => "6 ",
     7 => "7 ",
-    8 => "8 ",
+    8 => "8 "
   }
   BCOLOR = {
     unexplored: [:cyan, :light_blue],
     flagged: :red,
     bomb: :red,
-    kill_bomb: :light_red
+    kill_bomb: :light_red,
+    safe: :light_green
   }
   COLOR = {
-    unexplored: :light_yellow
+    unexplored: :light_yellow,
+    1 => :light_magenta,
+    2 => :light_blue,
+    3 => :light_green,
+    4 => :light_red,
+    5 => :red,
+    6 => :red,
+    7 => :red,
+    8 => :red 
   }
   attr_accessor :is_bomb, :flagged, :board, :explored, :neighbors, :pos
   def initialize(board, pos)
@@ -73,9 +82,9 @@ class Tile
         bombs_count += 1 if neighbor.bomb?
       end
       if bombs_count == 0
-        ICON[:safe]
+        ICON[:safe].colorize(background: BCOLOR[:safe])
       elsif bombs_count >= 1
-        ICON[bombs_count]
+        ICON[bombs_count].colorize(color: COLOR[bombs_count])
       end
     else
       ICON[:unexplored][frame].colorize(color: COLOR[:unexplored][frame])
@@ -94,9 +103,9 @@ class Tile
         bombs_count += 1 if neighbor.bomb?
       end
       if bombs_count == 0
-        ICON[:safe]
+        ICON[:safe].colorize(background: BCOLOR[:safe])
       elsif bombs_count >= 1
-        ICON[bombs_count]
+        ICON[bombs_count].colorize(color: COLOR[bombs_count])
       end
     end
   end

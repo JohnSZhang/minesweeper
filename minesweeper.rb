@@ -2,6 +2,7 @@
 require_relative "board"
 require_relative "tile"
 require_relative "cursor"
+require_relative "render"
 require "yaml"
 
 class Minesweeper
@@ -24,9 +25,10 @@ class Minesweeper
   end
 
   def play
-    system "clear"
+    wipe    
     self.title
     self.prologue
+
 
     @game_thread = Thread.new{
       while true
@@ -39,6 +41,7 @@ class Minesweeper
     @main_thread.join
 
     self.endgame
+    wipe
   end
 
 
@@ -59,7 +62,7 @@ class Minesweeper
 
   def animate_board
     frame_rate = (12.0/24.0)
-    until false
+    until self.board.over?
       [0,1].each do |frame|
         @mutex.synchronize do
           self.board.render frame
@@ -68,7 +71,7 @@ class Minesweeper
         print "\r\nType F to 'flag a Commie'. \n"
         print "\r\nType S to save your informant list, D to load your last list, and X if you are ready to give up :("
         sleep(frame_rate)
-        system "clear"
+        wipe
       end
     end
 
@@ -76,37 +79,26 @@ class Minesweeper
 
 
   def title
-    system "clear"
-    print "\r\n RED ".colorize(color: :red)
+    wipe
+    print "\r\n RED ".colorize(color: :red).blink
     print "Is The Scariest Color"
     sleep(4)
-    system "clear"
+    wipe
   end
 
   def prologue
-    frame_rate = (2.0/24.0)
-    display = 0
-    string = "The year is 1951, and Congress has put you in charge of chasing down communist\r\nsympathizers, get them before they get a chance to flee the country!".split("")
-    string_size = string.length
-    display_string = ""
-    until display == string_size
-      system "clear"
-      display_string << string.shift
-      print "\r\n#{display_string}"
-      sleep(frame_rate)
-      display += 1
-    end
-    sleep(1)
-    system "clear"
+    frame_rate = 1.5 / 24.0
+    text = "The year is 1951, and Congress has put you in charge of chasing down communist\r\nsympathizers, get them all before they get a chance to flee the country!"
+    text_display(text, frame_rate, 2)
   end
 
   def endgame
-    system "clear"
-    sleep(3)
-    self.board.reveal
-
+    frame_rate = 1.5 / 24.0
+    text =  "Looks like a communist discovered your identity before you hunted them all down!\r\nThe rest fled the country and Senator McCarthy personally took notice of you as a possible sympathizer.\r\nThere goes your political career. "
+    text_display(text, frame_rate, 6, "" ){self.board.reveal}
   end
 
+    
   def exit_game?(input)
     if input == "x"
       @game_thread.kill
