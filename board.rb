@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "colorize"
 class Board
 
@@ -7,8 +8,7 @@ class Board
     @grid = Array.new(9) { Array.new(9) }
     @size = size
     @mines = mines
-    @cursor = Cursor.new([rand(size), rand(size)])
-    
+    @cursor = Cursor.new([rand(size), rand(size)], [@size, @size])
     create_grid.set_bombs(@mines)
   end
 
@@ -30,10 +30,14 @@ class Board
       self[cursor_pos].explore
     when ["f","F"].include?(move)
       self[cursor_pos].flag!
-    # when "\e[A"
-   #  when "\e[B"
-   #  when "\e[C"
-   #  when "\e[D"
+    when move == "k"
+      self.cursor.move("down")
+    when move == "i"
+      self.cursor.move("up")
+    when  move =="j"
+      self.cursor.move("left")
+    when move == "l"
+      self.cursor.move("right")
     end
   end
   
@@ -68,45 +72,6 @@ class Board
     self.grid.flatten.select { |tile| tile.explored? && tile.bomb? }.count > 0
   end
 
-  def render(f)
-    border = ["$", "%"]
-    cursor = [:light_cyan, :light_white ]
-    print "\r\n  "
-    (grid.count).times do |index|
-      if (0..grid.count).include?(index)
-        print "#{index}  "
-      else
-        print "  "
-      end
-    end
-    print "\r\n"
-    (grid.count + 2).times{ print "#{border[f]}  " }
-    grid.count.times do |row|
-      print "\r\n#{border[f]}  "
-      grid.count.times do |col|
-        tile = self[[row, col]]
-        if tile.pos == self.cursor.position
-          print (tile.render + " ").colorize(:background => cursor[f])
-        else
-          print (tile.render + " ")
-        end
-      end
-      print "#{border[f]}\n"
-    end
-    print "\r\n"
-    (grid.count + 2).times{ print "#{border[f]}  " }
-    self
-  end
-  
-  def render_border
-  end
-  
-  def render_row
-  end
-  
-  def render_tile
-  end
-
   def set_bombs(mines)
     mine_count = mines
     
@@ -135,5 +100,22 @@ class Board
 
     neighbors
   end
+
+  def render(f)
+    cursor = [:light_cyan, :light_white ]
+    self.grid.count.times do |row|
+ 
+      self.grid.count.times do |col|
+        tile = self[[row, col]]
+        if tile.pos == self.cursor.position
+          print (tile.render(f) + " ").colorize(:background => cursor[f])
+        else
+          print (tile.render(f) + " ")
+        end
+      end
+      print "\r\n"
+    end
+    self
+ end
   
 end

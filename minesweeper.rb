@@ -10,43 +10,34 @@ class Minesweeper
     @board = Board.new
     @thread = nil
     @mutex = Mutex.new
+    @input
   end
   def save
     save = @board.to_yaml
-    file = File.open("save_file.txt", "w") << save
+    file = File.open("game.sav", "w") << save
     file.close
   end
 
   def load
-    file = File.read("save_file.txt")
+    file = File.read("game.sav")
     @board = YAML::load(file)
   end
 
   def play
 
-    # unless false
-    #   move = self.animate_board
-    #   puts "animate_board finished"
-    #   begin
-    #     system("stty raw -echo")
-    #     input = STDIN.getc
-    #   ensure
-    #     system("stty -raw echo")
-    #   end
-    #   p input      #
-    #   # p Thread.main
-    #
-    # end
+    system "clear"  
     @game_thread = Thread.new{
-      unless self.game.over?
+      while true
+        sleep(5)
       end
     }
+    
     @main_thread = Thread.new{self.animate_board}
-
-
     @input_thread = Thread.new{self.get_input}
-    @main_thread.join
-    @input_thread.join
+    @main_thread.join    
+    
+    
+    # @input_thread.join
     # until self.board.over?
     #     system "clear"
     #
@@ -72,51 +63,71 @@ class Minesweeper
     #   puts "You cleared all the mines!" if self.board.win?
   end
   
-  def input
-    #    # Input parsing method From https://gist.github.com/acook/4190379
-    #        p self.board.object_id
-    #    input = STDIN.getc.chr
-    #    p input
-    #
-    #    self.board.process_move(input)
-  end
+ 
   def get_input
-    sleep(6.0/24.0)
-    until self.board.over?
-
-      sleep(12.0/24.0)
+    input_frame_rate = 6.0/24.0
+      sleep(input_frame_rate)
       system("stty raw -echo")
-      input = STDIN.getc
+      input = STDIN.getc.chr
+      self.exit_game?(input)
+      self.state_change?(input)
+      
       @mutex.synchronize do
         self.board.process_move(input)
       end
-      #   self.board.render 0
-      #   # if input == "x"
-      # #     @game_thread.kill
-      # #     @other_thread.kill
-      # #     @input_thread.kill
-      # #   end
-      #
-    end
+      @input_thread = Thread.new{self.get_input}
+      
   end
   
   def animate_board
     frame_rate = (12.0/24.0)
-    
-    until self.board.over?
+    until false
       [0,1].each do |frame|
         @mutex.synchronize do
           self.board.render frame
         end
-        print "\r\nUse Arrow Keys To Move, E to Explore Current Tile "
+        print "\r\nUse I, J, K, L To Move Direction, E to Explore Current Tile "
         print "\r\nand F to flag current tile \n"
-        print "\r\nType S to save game and L to load last save"
+        print "\r\nType S to save game and D to load last save and X to exit"
         sleep(frame_rate)
         system "clear"  
       end
     end
   
   end
+  
+  
+  def render_title
+    frame_rate = (12.0/24.0)
+    display = 0
+    string = "The year is 1951, and you've been charged by the government to chase down communist sympathizers, get them before they get a chance to flee!".to_a
+    string_size = string.length
+    display_string = ""
+    until display == string_size
+      system "clear"  
+      display_string << string.shift
+      print "\r\n#{display_string}"
+      sleep(frame_rate)
+      display += 1
+    end
+  end
+  
+  def exit_game?(input)
+    if input == "x"
+      @game_thread.kill
+      @main_thread.kill
+    end
+  end
+  
+  def state_change?(input)
+    case 
+    when input == "s"
+      self.save
+    when input == "d"
+      self.load
+    end
+  end
+      
    
 end
 
