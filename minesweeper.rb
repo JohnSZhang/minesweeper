@@ -24,8 +24,10 @@ class Minesweeper
   end
 
   def play
-
     system "clear"  
+    self.title
+    self.prologue
+    
     @game_thread = Thread.new{
       while true
         sleep(5)
@@ -35,32 +37,6 @@ class Minesweeper
     @main_thread = Thread.new{self.animate_board}
     @input_thread = Thread.new{self.get_input}
     @main_thread.join    
-    
-    
-    # @input_thread.join
-    # until self.board.over?
-    #     system "clear"
-    #
-    #
-    #     input = gets.chomp
-    #             p @thread.object_id
-    #     @thread.stop if input = "e"
-    #
-    #     # self.input
-    #     # if pick_coordinate[0] == "s"
-    #     #   save
-    #     #   puts "Game was saved! Dont try and cheat the game"
-    #     # elsif pick_coordinate[0] == "l"
-    #     #   load
-    #     #   puts "Game was loaded!"
-    #     # else
-    #     #   pos = pick_coordinate.drop(1).map{|i| i.to_i}
-    #     #   self.board.process_tile(pos, pick_coordinate[0])
-    #     # end
-    #   end
-    #   self.board.render
-    #   puts "Game Over! *BOOM*" if self.board.lose?
-    #   puts "You cleared all the mines!" if self.board.win?
   end
   
  
@@ -86,9 +62,9 @@ class Minesweeper
         @mutex.synchronize do
           self.board.render frame
         end
-        print "\r\nUse I, J, K, L To Move Direction, E to Explore Current Tile "
-        print "\r\nand F to flag current tile \n"
-        print "\r\nType S to save game and D to load last save and X to exit"
+        print "\r\nUse I, J, K, L To move about, E to look for informants. "
+        print "\r\nType F to 'flag a Commie'. \n"
+        print "\r\nType S to save your informant list, D to load your last list, and X if you are ready to give up :("
         sleep(frame_rate)
         system "clear"  
       end
@@ -97,10 +73,18 @@ class Minesweeper
   end
   
   
-  def render_title
-    frame_rate = (12.0/24.0)
+  def title
+    system "clear"  
+    print "\r\n RED ".colorize(color: :red)
+    print "Is The Scariest Color"
+    sleep(4)
+    system "clear"  
+  end
+  
+  def prologue
+    frame_rate = (2.0/24.0)
     display = 0
-    string = "The year is 1951, and you've been charged by the government to chase down communist sympathizers, get them before they get a chance to flee!".to_a
+    string = "The year is 1951, and Congress has put you in charge of chasing down communist\r\nsympathizers, get them before they get a chance to flee the country!".split("")
     string_size = string.length
     display_string = ""
     until display == string_size
@@ -110,6 +94,8 @@ class Minesweeper
       sleep(frame_rate)
       display += 1
     end
+    sleep(1)
+    system "clear"  
   end
   
   def exit_game?(input)

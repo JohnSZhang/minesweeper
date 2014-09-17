@@ -108,7 +108,7 @@ class Board
       self.grid.count.times do |col|
         tile = self[[row, col]]
         if tile.pos == self.cursor.position
-          print (tile.render(f) + " ").colorize(:background => cursor[f])
+          print (tile.render(f)).colorize(:background => cursor[f])
         else
           print (tile.render(f) + " ")
         end

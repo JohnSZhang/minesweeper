@@ -1,21 +1,23 @@
 # encoding: utf-8
 class Tile
   ICON = {
-    bomb: "✈",
-    unexplored: ["☭","⚒"],
-    flagged: "⚔",
-    safe: "⚖",
-    1 => "1",
-    2 => "2", 
-    3 => "3", 
-    4 => "4", 
-    5 => "5", 
-    6 => "6", 
-    7 => "7", 
-    8 => "8",
+    bomb: "✈ ",
+    unexplored: ["☭ ","⚒ "],
+    flagged: "⚔ ",
+    safe: "⚖ ",
+    1 => "1 ",
+    2 => "2 ", 
+    3 => "3 ", 
+    4 => "4 ", 
+    5 => "5 ", 
+    6 => "6 ", 
+    7 => "7 ", 
+    8 => "8 ",
   }
   BCOLOR = {
-    unexplored: [:cyan, :light_blue]
+    unexplored: [:cyan, :light_blue],
+    flagged: :red,
+    bomb: :red
   }
   COLOR = {
     unexplored: :light_yellow
@@ -60,9 +62,9 @@ class Tile
 
   def render(frame)
     if flag?
-      ICON[:flagged]
+      ICON[:flagged].colorize(background: BCOLOR[:flagged])
     elsif explored?
-      return ICON[:bomb] if bomb?
+      return ICON[:bomb].colorize(background: BCOLOR[:bomb]) if bomb?
       neighbors = self.get_neighbors
       bombs_count = 0
       neighbors.each do |neighbor|
@@ -77,10 +79,7 @@ class Tile
       ICON[:unexplored][frame].colorize(color: COLOR[:unexplored][frame])
     end
   end
-  
-  def render_title
-    
-  end
+
 
   def get_neighbors
     self.board.neighbors(self.pos)
