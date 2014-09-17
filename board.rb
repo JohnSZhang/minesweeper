@@ -23,9 +23,9 @@ class Board
   end
   # Arrow parsing method From https://gist.github.com/acook/4190379
   def process_move(move)
-    
+
     cursor_pos = self.cursor.position
-    case 
+    case
     when ["e","E"].include?(move)
       self[cursor_pos].explore
     when ["f","F"].include?(move)
@@ -40,7 +40,7 @@ class Board
       self.cursor.move("right")
     end
   end
-  
+
   def process_tile(pos, move)
     if move == "f"
       grid[pos].flag!
@@ -74,7 +74,7 @@ class Board
 
   def set_bombs(mines)
     mine_count = mines
-    
+
     until mine_count == 0
       tile = self.grid.sample.sample
       unless tile.bomb?
@@ -89,7 +89,7 @@ class Board
   def neighbors(pos)
     neighbors = []
     moves = [-1,0,1]
-    
+
     moves.each do |x|
       moves.dup.each do |y|
         x_cor, y_cor = pos[0] + x, pos[1] + y
@@ -104,18 +104,24 @@ class Board
   def render(f)
     cursor = [:light_cyan, :light_white ]
     self.grid.count.times do |row|
- 
+
       self.grid.count.times do |col|
         tile = self[[row, col]]
         if tile.pos == self.cursor.position
-          print (tile.render(f)).colorize(:background => cursor[f])
+          print (tile.render(f).colorize(:background => cursor[f]))
         else
-          print (tile.render(f) + " ")
+          print (tile.render(f))
         end
       end
       print "\r\n"
     end
     self
  end
-  
+
+ def reveal
+   self.grid.times do |row|
+     row.each {|tile| print(tile.reveal)}
+     print "\r\n"
+   end
+   self
 end

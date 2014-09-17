@@ -24,22 +24,24 @@ class Minesweeper
   end
 
   def play
-    system "clear"  
+    system "clear"
     self.title
     self.prologue
-    
+
     @game_thread = Thread.new{
       while true
         sleep(5)
       end
     }
-    
+
     @main_thread = Thread.new{self.animate_board}
     @input_thread = Thread.new{self.get_input}
-    @main_thread.join    
+    @main_thread.join
+
+    self.endgame
   end
-  
- 
+
+
   def get_input
     input_frame_rate = 6.0/24.0
       sleep(input_frame_rate)
@@ -47,14 +49,14 @@ class Minesweeper
       input = STDIN.getc.chr
       self.exit_game?(input)
       self.state_change?(input)
-      
+
       @mutex.synchronize do
         self.board.process_move(input)
       end
       @input_thread = Thread.new{self.get_input}
-      
+
   end
-  
+
   def animate_board
     frame_rate = (12.0/24.0)
     until false
@@ -66,21 +68,21 @@ class Minesweeper
         print "\r\nType F to 'flag a Commie'. \n"
         print "\r\nType S to save your informant list, D to load your last list, and X if you are ready to give up :("
         sleep(frame_rate)
-        system "clear"  
+        system "clear"
       end
     end
-  
+
   end
-  
-  
+
+
   def title
-    system "clear"  
+    system "clear"
     print "\r\n RED ".colorize(color: :red)
     print "Is The Scariest Color"
     sleep(4)
-    system "clear"  
+    system "clear"
   end
-  
+
   def prologue
     frame_rate = (2.0/24.0)
     display = 0
@@ -88,33 +90,40 @@ class Minesweeper
     string_size = string.length
     display_string = ""
     until display == string_size
-      system "clear"  
+      system "clear"
       display_string << string.shift
       print "\r\n#{display_string}"
       sleep(frame_rate)
       display += 1
     end
     sleep(1)
-    system "clear"  
+    system "clear"
   end
-  
+
+  def endgame
+    system "clear"
+    sleep(3)
+    self.board.reveal
+
+  end
+
   def exit_game?(input)
     if input == "x"
       @game_thread.kill
       @main_thread.kill
     end
   end
-  
+
   def state_change?(input)
-    case 
+    case
     when input == "s"
       self.save
     when input == "d"
       self.load
     end
   end
-      
-   
+
+
 end
 
 

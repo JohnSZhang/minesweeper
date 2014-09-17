@@ -5,19 +5,21 @@ class Tile
     unexplored: ["☭ ","⚒ "],
     flagged: "⚔ ",
     safe: "⚖ ",
+    kill_bomb: "☠",
     1 => "1 ",
-    2 => "2 ", 
-    3 => "3 ", 
-    4 => "4 ", 
-    5 => "5 ", 
-    6 => "6 ", 
-    7 => "7 ", 
+    2 => "2 ",
+    3 => "3 ",
+    4 => "4 ",
+    5 => "5 ",
+    6 => "6 ",
+    7 => "7 ",
     8 => "8 ",
   }
   BCOLOR = {
     unexplored: [:cyan, :light_blue],
     flagged: :red,
-    bomb: :red
+    bomb: :red,
+    kill_bomb: :light_red
   }
   COLOR = {
     unexplored: :light_yellow
@@ -73,13 +75,31 @@ class Tile
       if bombs_count == 0
         ICON[:safe]
       elsif bombs_count >= 1
-        "#{bombs_count}"
+        ICON[bombs_count]
       end
     else
       ICON[:unexplored][frame].colorize(color: COLOR[:unexplored][frame])
     end
   end
 
+  def reveal
+    if bomb? && explored?
+      return ICON[:kill_bomb].colorize(background: BCOLOR[:kill_bomb])
+    elsif bomb?
+      return ICON[:bomb].colorize(background: BCOLOR[:bomb]) if bomb?
+    else
+      neighbors = self.get_neighbors
+      bombs_count = 0
+      neighbors.each do |neighbor|
+        bombs_count += 1 if neighbor.bomb?
+      end
+      if bombs_count == 0
+        ICON[:safe]
+      elsif bombs_count >= 1
+        ICON[bombs_count]
+      end
+    end
+  end
 
   def get_neighbors
     self.board.neighbors(self.pos)
